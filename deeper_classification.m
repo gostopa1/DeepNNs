@@ -1,3 +1,5 @@
+%% Creating dataset
+
 clear
 addpath('./activation_functions')
 addpath('./loss_functions')
@@ -17,11 +19,11 @@ x=zscore(x,[],1);
 %test_data=[x_test(: ) y_test(:)];
 test_data=zscore([x_test(: ) y_test(:)],1);
 
-%% The next part is identical in regression and classification
+%% Model Initialization 
 clear model
 
-layers=[3];
-batchsize=100
+layers=[3 ];
+model.batchsize=20
 noins=size(x,2);
 noouts=size(y,2);
 
@@ -32,90 +34,71 @@ lr=0.1; activation='logsi';
 
 model.layersizes=[layers];
 model.target=y;
+model.epochs=200;
+model.update=100;
+
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
     model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
-            
-    model.layers(layeri).activation=activation;
-    
+    model.layers(layeri).activation=activation; 
 end
-layeri
+model.layers(2).lr=lr*10;
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
-
+%model.layers(layeri).blr=lr/1; model.layers(layeri).activation='softmaxact';
+%% Model training
 
 clear error
-epochs=1000
-for epoch=1:epochs
-    display(['Epoch: ' num2str(epoch)])
+
+for epoch=1:model.epochs
+    if mod(epoch,model.update)==0
+        display(['Epoch: ' num2str(epoch)])
+    end
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    a(epoch)=(model.layers(end).out(1,1));
-    preact=model.layers(end).X*model.layers(end).W+repmat(model.layers(end).B,1,size(model.layers(end).X,1))';
-    a(epoch)=preact(1,1);
     [error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
+    %[error(epoch),dedout]=cross_entropy_cost(model); % Using quadratic error function
     
-    [error(epoch),dedout]=cross_entropy_cost(model); % Using quadratic error function
-    randomized_sample_indices=randperm(N);
-    for batchi=1:batchsize:N
-        layeri=length(model.layers);
-               
-        batchinds=randomized_sample_indices(batchi:(batchsize+batchi-1));
-        
-        clear dedw dedb
-        
-        ins=model.layers(layeri).Ws(1);
-        outs=model.layers(layeri).Ws(2);
-                
-        dnetdw=permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
-        dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))';
-        dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw;
-        
-        %model.layers(layeri).grad=dedout.*model.layers(layeri).doutdnet;
-        model.layers(layeri).grad=dedb';
-        
-        %model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*sum(dedw,3);
-        %model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*sum(dedb,2);
-        
-        
-        model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*mean(dedw,3);
-        model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);
-        
-        for layeri=(length(model.layers)-1):-1:1
+    randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
+    for batchi=1:model.batchsize:N
+        for layeri=(length(model.layers)):-1:1
             clear dedw dedb
             ins=model.layers(layeri).Ws(1);
             outs=model.layers(layeri).Ws(2);
-            
-            %model.layers(layeri).grad=squeeze(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,batchsize),2))'.*model.layers(layeri).doutdnet(batchinds,:);
-            model.layers(layeri).grad=permute(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,batchsize),2),[1 3 2])'.*model.layers(layeri).doutdnet(batchinds,:);
-            
-            dedb=model.layers(layeri).grad';
-            dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
-                        
-            %model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*sum(dedw,3);
-            %model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*sum(dedb,2);
-            
-            model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*mean(dedw,3);
-            model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);        
+            batchinds=randomized_sample_indices(batchi:(model.batchsize+batchi-1));
+            if layeri==length(model.layers)
+                % For the last layer the gradient is calculated as
+                % dE/dw = dE/dout * dout/dnet * dnet/dw
+                dnetdw=permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]); % dnet/dw
+                
+                dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
+                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
+            else
+                dedb=(permute(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,model.batchsize),2),[1 3 2])'.*model.layers(layeri).doutdnet(batchinds,:))';
+                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
+                
+            end
+            model.layers(layeri).grad=dedb';
+            if model.layers(layeri).lr~=0
+                
+                model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*mean(dedw,3);
+                model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);
+            end
         end
     end
     
-    if mod(epoch,20)==1
-        %model.layers(end).W
-        %model.layers(end).grad
-        %pause
-        
+    if mod(epoch,model.update)==0
         show_network
         drawnow
     end
 end
 
-%print('a.png','-dpng','-r500')
-%%
+%save_figure
+%% Visual evaluation
 
 model.test=0;
 [model,out_test]=forwardpassing(model,[test_data]);
@@ -149,9 +132,7 @@ xlabel('Epoch')
 
 ylabel('Error')
 
-
-
-%%
+%% Numerical evaluation (i.e. classification accuracy, etc.)
 
 [~,indpre]=max(out(:,:,end)');
 
