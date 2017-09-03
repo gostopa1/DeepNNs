@@ -1,1 +1,1 @@
-![Example](./images/example_image.png){:height="10%" width="10%"}
+<img src="./images/example_image.png" align="left" height="600" width="350" ></a>
