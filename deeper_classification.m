@@ -12,6 +12,7 @@ N=size(x,1);
 N=1000; x=rand(N,2); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
 
 x=zscore(x,[],1);
+
 %y=zscore(y,[],1)
 
 [x_test,y_test]=meshgrid(0:0.1:1,0:0.1:1);
@@ -19,36 +20,44 @@ x=zscore(x,[],1);
 %test_data=[x_test(: ) y_test(:)];
 test_data=zscore([x_test(: ) y_test(:)],1);
 
+%x=x/max(x(:)); test_data=test_data/max(abs(test_data(:)));
+
 %% Model Initialization 
 clear model
 
-layers=[3 ];
-model.batchsize=20
+layers=[5];
+model.batchsize=200
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.1; activation='tanhact';
-%lr=0.1; activation='relu';
-lr=0.1; activation='logsi';
+lr=0.01; activation='relu';
+%lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
 model.target=y;
-model.epochs=200;
-model.update=100;
+model.epochs=1000;
+model.update=200;
 
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
-    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
-    model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
+    %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(layers(layeri));
+    %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
+    model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;
     model.layers(layeri).activation=activation; 
 end
-model.layers(2).lr=lr*10;
+%model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/1;
+model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(layers(layeri));
+model.layers(layeri).lr=lr/100; model.layers(layeri).activation='softmaxact';
+
+
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
-%model.layers(layeri).blr=lr/1; model.layers(layeri).activation='softmaxact';
+
 %% Model training
 
 clear error
@@ -60,8 +69,8 @@ for epoch=1:model.epochs
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    [error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
-    %[error(epoch),dedout]=cross_entropy_cost(model); % Using quadratic error function
+    %[error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
+    [error(epoch),dedout]=cross_entropy_cost(model); % Using cross_entropy error function
     
     randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:N

@@ -10,7 +10,7 @@ N=size(x,1);
 
 N=1000; x=rand(N,2); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
 %N=1000; x=rand(N,2); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
-%N=1000; x=rand(N,2); y=x(:,1)>0.5; y(:,2) = 1 - y(:,1);
+N=1000; x=rand(N,2); y=x(:,1)>0.5; y(:,2) = 1 - y(:,1);
 x=zscore(x,[],1);
 %y=zscore(y,[],1)
 
@@ -35,8 +35,8 @@ lr=0.1; activation='logsi';
 
 model.layersizes=[layers];
 model.target=y;
-model.epochs=500;
-model.update=100;
+model.epochs=200;
+model.update=50;
 
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
@@ -47,9 +47,7 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).activation=activation; 
 end
 model.layers(2).lr=lr*10;
-%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';
-%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
-%model.layers(layeri).blr=lr/1; model.layers(layeri).activation='softmaxact';
+
 %% Model training
 
 clear error
