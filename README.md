@@ -16,4 +16,7 @@ To implement next:
 - Dropout
 
 
-Attention: The classification script (deeper_classification.m) combines ReLU+Softmax+Cross-entropy which can cause exploding gradient. The gradient explosion depends on how the parameters are initialized. Therefore, it might explode when running the script which leads to nonsense models. It is left like this for demonstration purposes.
+Attention: The classification script (deeper_classification.m) combines ReLU+Softmax+Cross-entropy which can cause exploding gradient. The gradient explosion depends on how the parameters are initialized. Therefore, it might explode when running the script which leads to nonsense models. It is left like this for demonstration purposes. This issue is addressed in (1) and can be avoided to some extent by using L1 or L2 regularization.
+
+
+(1) https://arxiv.org/pdf/1211.5063.pdf
