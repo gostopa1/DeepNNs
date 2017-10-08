@@ -27,6 +27,7 @@ layers=[5 ];
 model.batchsize=50
 noins=size(x,2);
 noouts=size(y,2);
+model.errofun='quadratic_cost';
 
 layers=[noins layers noouts];
 lr=0.1; activation='tanhact';
@@ -59,9 +60,8 @@ for epoch=1:model.epochs
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    [error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
-    %[error(epoch),dedout]=cross_entropy_cost(model); % Using quadratic error function
-    
+    [error(epoch),dedout]=feval(model.errofun,model);
+
     randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:N
         for layeri=(length(model.layers)):-1:1

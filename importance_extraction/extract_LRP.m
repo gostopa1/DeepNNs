@@ -1,6 +1,8 @@
-function impos=extract_LRP(model,x)
+function [impos,model]=extract_LRP(model,x)
 %% Output is samples x inputs x outputs
-
+% The importances for each layer are also estimated if a second ouput
+% argument is requested. The output is the model and the importance per
+% layer are stored in model.layers(layer_number).R
 out=model.layers(end).out;
 nosamples=size(out,1);
 
@@ -28,7 +30,7 @@ for outi=1:noouts
         
         
         R=sum(WWsR.*outsR,3);
-        
+        model.layers(layeri).R=R;
     end
     
     impos(:,:,outi)=R;

@@ -39,7 +39,8 @@ model.layersizes=[layers];
 model.target=y;
 model.epochs=1000;
 model.update=200;
-
+model.errofun='quadratic_cost';
+model.errofun='cross_entropy_cost';
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
@@ -69,8 +70,7 @@ for epoch=1:model.epochs
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    %[error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
-    [error(epoch),dedout]=cross_entropy_cost(model); % Using cross_entropy error function
+    [error(epoch),dedout]=feval(model.errofun,model);
     
     randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:N

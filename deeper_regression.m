@@ -1,17 +1,17 @@
 clear
 addpath('./activation_functions')
 addpath('./loss_functions')
-N=100;
+N=500;
 x=randn(N,1);
 %x=x(abs(x)>1);
 N=length(x);
 y=x.^2;
 %y=tanh(x)
 
-%x=x/max(x(:));
-%y=y/max(y(:));
-x=zscore(x,[],1)
-y=zscore(y,[],1)
+x=x/max(x(:));
+y=y/max(y(:));
+%x=zscore(x,[],1)
+%y=zscore(y,[],1)
 
 
 %% Model initialization
@@ -19,33 +19,36 @@ clear model
 
 layers=[5 5];
 %batchsize=20
-model.batchsize=20
+model.batchsize=50
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.1; activation='tanhact';
+lr=0.02; activation='tanhact';
 %lr=0.1; activation='relu';
-%lr=1; activation='logsi';
+%lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
 model.target=y;
-model.epochs=1000;
+model.epochs=500;
+model.errofun='quadratic_cost';
+
 model.update=100; % How often to provide feedback to the user
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
-    model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/1;
+    model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/1;
             
     model.layers(layeri).activation=activation;
     
 end
 
-model.layers(layeri).lr=lr/100; model.layers(layeri).activation='linact';
-%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
-%model.layers(layeri).lr=lr/100; model.layers(layeri).activation='softmaxact';
+%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';
+model.layers(layeri).lr=lr/1; model.layers(layeri).activation='tanhact';
+
 %% Model training
 
 clear error
@@ -57,8 +60,8 @@ for epoch=1:model.epochs
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    [error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
-    %[error(epoch),dedout]=cross_entropy_cost(model); % Using quadratic error function
+    [error(epoch),dedout]=feval(model.errofun,model);
+    
     
     randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:N
