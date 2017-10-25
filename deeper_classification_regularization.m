@@ -27,41 +27,40 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 clear model
 
 layers=[5];
-model.batchsize=200
+model.batchsize=100
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.01; activation='tanhact';
-%lr=0.01; activation='relu';
-%lr=0.1; activation='logsi';
-model.l2=0;
-model.l1=0;
+%lr=0.1; activation='relu';
+%lr=0.05; activation='logsi';
+
 model.layersizes=[layers];
+model.dropout=0.5;
 model.target=y;
 model.epochs=500;
 model.update=100;
+model.l2=0.1;
+model.l1=0.1;
+
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
 for layeri=1:(length(layers)-1)
+
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
-    model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
-    
+    model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)];
+    %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri));
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
-    model.layers(layeri).B=(zeros(layers(layeri+1),1))/1;
+    model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;
     model.layers(layeri).activation=activation;
 end
-%model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/1;
-%model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(layers(layeri));
-%model.layers(layeri).lr=lr/0.1; model.layers(layeri).activation='tanhact';
-model.layers(layeri).lr=lr/1; model.layers(layeri).activation='softmaxact';
 
 
-%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';
-%model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
 
+model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
 %% Model training
 
 clear error
@@ -92,21 +91,24 @@ for epoch=1:model.epochs
                 
                 dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
                 dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
-                
-                %dedb
             else
                 dedb=(permute(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,model.batchsize),2),[1 3 2])'.*model.layers(layeri).doutdnet(batchinds,:))';
                 dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
                 
             end
+            
             model.layers(layeri).grad=dedb';
-            %dedb
-            regularization_term=model.layers(layeri).W-(model.layers(layeri).lr*((model.l1*sum(model.allweights(:)))/model.batchsize)).*sign(model.layers(layeri).W)-(model.layers(layeri).lr*((model.l2*sum(model.allweights(:)))/model.batchsize)).*model.layers(layeri).W;
             if model.layers(layeri).lr~=0
-                
-                %model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*mean(dedw,3);
+                %regularization_term1=model.layers(layeri).W-(model.layers(layeri).lr*((model.l2*sum(model.allweights(:)))/model.batchsize)).*model.layers(layeri).W;
+                %regularization_term2=model.layers(layeri).W-(model.layers(layeri).lr*((model.l2*sum(model.allweights(:)))/model.batchsize)).*sign(model.layers(layeri).W);
+                regularization_term=model.layers(layeri).W-(model.layers(layeri).lr*((model.l1*sum(model.allweights(:)))/model.batchsize)).*sign(model.layers(layeri).W)-(model.layers(layeri).lr*((model.l2*sum(model.allweights(:)))/model.batchsize)).*model.layers(layeri).W;
+                temp=regularization_term-model.layers(layeri).lr*mean(dedw,3);
+                if sum(isnan(temp))>0
+                    display('About to explode')
+                    pause
+                end
                 model.layers(layeri).W=regularization_term-model.layers(layeri).lr*mean(dedw,3);
-                model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);
+                model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);        
                 
             end
         end
@@ -116,8 +118,6 @@ for epoch=1:model.epochs
         show_network
         drawnow
     end
-  %model.layers(end).grad
-  %pause
 end
 show_network
 %save_figure

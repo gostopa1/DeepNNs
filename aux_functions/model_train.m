@@ -7,9 +7,8 @@ for epoch=1:model.epochs
     end
     %%Forward passing
     
-    [model,model.out(:,:,epoch)]=forwardpassing(model,x);
-    %[error(epoch),dedout]=quadratic_cost(model); % Using quadratic error function
-    [model.error(epoch),dedout]=cross_entropy_cost(model); % Using cross_entropy error function
+    [model,out(:,:,epoch)]=forwardpassing(model,x);
+    [model.error(epoch),dedout]=feval(model.errofun,model);
     
     randomized_sample_indices=randperm(model.N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:model.N
@@ -33,7 +32,7 @@ for epoch=1:model.epochs
             model.layers(layeri).grad=dedb';
             if model.layers(layeri).lr~=0
                 
-                model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr*mean(dedw,3);
+                model.layers(layeri).W=model.layers(layeri).W-model.layers(layeri).lr.*mean(dedw,3);
                 model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr*mean(dedb,2);
             end
         end

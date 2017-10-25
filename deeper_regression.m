@@ -6,7 +6,7 @@ x=randn(N,1);
 %x=x(abs(x)>1);
 N=length(x);
 y=x.^2;
-%y=tanh(x)
+y=tanh(x)
 
 x=x/max(x(:));
 y=y/max(y(:));
@@ -19,20 +19,21 @@ clear model
 
 layers=[5 5];
 %batchsize=20
-model.batchsize=50
+model.batchsize=100
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.02; activation='tanhact';
-%lr=0.1; activation='relu';
+lr=0.1; activation='relu';
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
 model.target=y;
 model.epochs=500;
 model.errofun='quadratic_cost';
-
+model.l2=0;
+model.l1=0;
 model.update=100; % How often to provide feedback to the user
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
@@ -58,7 +59,7 @@ for epoch=1:model.epochs
         display(['Epoch: ' num2str(epoch)])
     end
     %%Forward passing
-    
+    model=vectorize_all_weights(model);
     [model,out(:,:,epoch)]=forwardpassing(model,x);
     [error(epoch),dedout]=feval(model.errofun,model);
     

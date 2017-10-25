@@ -23,7 +23,7 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization 
 clear model
 
-layers=[5 ];
+layers=[5];
 model.batchsize=50
 noins=size(x,2);
 noouts=size(y,2);
@@ -34,6 +34,8 @@ lr=0.1; activation='tanhact';
 %lr=0.1; activation='relu';
 lr=0.1; activation='logsi';
 
+model.l2=0;
+model.l1=0;
 model.layersizes=[layers];
 model.target=y;
 model.epochs=200;
@@ -57,6 +59,8 @@ for epoch=1:model.epochs
     if mod(epoch,model.update)==0
         display(['Epoch: ' num2str(epoch)])
     end
+    model=vectorize_all_weights(model);
+
     %%Forward passing
     
     [model,out(:,:,epoch)]=forwardpassing(model,x);
@@ -120,6 +124,9 @@ for pointi=1:size(test_data,1)
     set(m,'MarkerSize',abs(out_test(pointi,1))*factor+5)
 end
 set(gca,'XTick',[1 11],'XTickLabel',[0 1]);
+xlabel('Variable 1')
+ylabel('Variable 2')
+
 set(gca,'YTick',[1 11],'YTickLabel',[0 1]);
 
 %axis off

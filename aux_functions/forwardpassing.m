@@ -3,7 +3,7 @@ model.layers(1).X=x;
 layerno=length(model.layers);
 for layeri=1:layerno
     
-    if strcmp(model.layers(layeri).activation,'softmaxact') || strcmp(model.layers(layeri).activation,'losoftmaxact')
+    if strcmp(model.layers(layeri).activation,'softmaxact')
         [model.layers(layeri).out, model.layers(layeri).doutdnet]=feval(model.layers(layeri).activation,model.layers(layeri).X,model.layers(layeri).W,model.layers(layeri).B,model.target);
     else
         [model.layers(layeri).out, model.layers(layeri).doutdnet]=feval(model.layers(layeri).activation,model.layers(layeri).X,model.layers(layeri).W,model.layers(layeri).B);
@@ -17,8 +17,6 @@ for layeri=1:layerno
         
     end
 end
-
-
 
 
 end

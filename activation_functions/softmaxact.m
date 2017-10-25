@@ -1,25 +1,25 @@
 function [act,der]=softmaxact(X,W,B,target)
+
 preact=X*W+repmat(B,1,size(X,1))';
+
 exppreact=exp(preact);
 
 act=exppreact./repmat(sum(exppreact,2),1,size(exppreact,2));
 
-if ~sum(isnan(act))==0
-    [~,inds]=max(preact');
-    exppreact=ones(size(preact))*0.01;
-    exppreact(:,inds)=0.99;
-    act=exppreact./repmat(sum(exppreact,2),1,size(exppreact,2));
-end
+upthres=0.99; downthres=0.01;
+
+act(act>upthres)=upthres;
+act(act<downthres)=downthres;
 
 try
-    der=(-act.*(target-act));
+    
+    %der=(act.*(target-act));
+    der=ones(size(act)); % Assigning the derivatives to ones, seems to work better without a sound explanation. Otherwise, when using softmax and cross-entropy, the product of their derivatives (i.e. dE/net=dE/dout * dout/dnet) is always positive, that makes the weights in the output layer to grow infinitely and explode.
 catch
     display('Number of samples do not match between inputs and targets! Cannot estimate derivative. Setting them to zero instead!')
     der=zeros(size(act));
 end
 
-uplim=0.99;
-lowlim=0.01;
-der(der>uplim)=uplim;
-der(der<lowlim)=lowlim;
+
+
 end
