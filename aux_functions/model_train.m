@@ -6,10 +6,11 @@ for epoch=1:model.epochs
         display(['Epoch: ' num2str(epoch)])
     end
     %%Forward passing
-    
+    model=vectorize_all_weights(model);
     [model,out(:,:,epoch)]=forwardpassing(model,x);
     [model.error(epoch),dedout]=feval(model.errofun,model);
     
+
     randomized_sample_indices=randperm(model.N); % Randomize the sample to randomly select samples for mini-batch
     for batchi=1:model.batchsize:model.N
         for layeri=(length(model.layers)):-1:1

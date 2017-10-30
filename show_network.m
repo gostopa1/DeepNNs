@@ -23,7 +23,11 @@ for layeri=1:(length(model.layersizes)-1)
                 else
                     col=[1 0 0];
                 end
-                line([layeri layeri+1],[ylocs1(i) ylocs2(j)],'LineWidth',wid,'Color',col);
+                try 
+                    line([layeri layeri+1],[ylocs1(i) ylocs2(j)],'LineWidth',wid,'Color',col);
+                catch
+                    line([layeri layeri+1],[ylocs1(i) ylocs2(j)],'LineWidth',2,'Color','Black','LineStyle','--');
+                end
             end
         end
     end
