@@ -29,6 +29,8 @@ lr=0.1; activation='relu';
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
+model.layersizesinitial=model.layersizes;
+
 model.target=y;
 model.epochs=500;
 model.errofun='quadratic_cost';
@@ -44,7 +46,7 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/1;
             
     model.layers(layeri).activation=activation;
-    
+    model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
 
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='linact';

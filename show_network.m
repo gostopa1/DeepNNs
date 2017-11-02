@@ -5,12 +5,18 @@ subplot(4,1,[1 2])
 hold on
 linefactor=2;
 for layeri=1:(length(model.layersizes)-1)
-    %for layeri=1:2
+     ylocs1=(1:model.layersizesinitial(layeri));
     
-    ylocs1=(1:model.layersizes(layeri));
     ylocs1=ylocs1-mean(ylocs1);
-    ylocs2=(1:model.layersizes(layeri+1));
+    
+    ylocs2=(1:model.layersizesinitial(layeri+1));
+    
     ylocs2=ylocs2-mean(ylocs2);
+    
+    ylocs1=ylocs1(model.layers(layeri).inds);
+    if layeri<length(model.layers)
+    ylocs2=ylocs2(model.layers(layeri+1).inds);
+    end
     
     
     for i = 1:model.layersizes(layeri)
@@ -55,13 +61,18 @@ for layeri=1:length(model.layersizes)
         nodecol=[0 0 0.5];
         
     end
-    ylocs=(1:model.layersizes(layeri));
+    ylocs=(1:model.layersizesinitial(layeri));
     ylocs=ylocs-mean(ylocs);
+    
+    if layeri<=length(model.layers)
+    ylocs=ylocs(model.layers(layeri).inds);
+    end
     for neuroni=1:model.layersizes(layeri)
         h=plot(layeri,ylocs(neuroni),'.k');
         set(h,'MarkerSize',50,'Color',nodecol);
     end
 end
+axis([1 length(model.layers)+1 minmax(1:max(model.layersizesinitial))-mean(1:max(model.layersizesinitial))])
 axis off
 box off
 

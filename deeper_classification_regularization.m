@@ -26,23 +26,24 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization
 clear model
 
-layers=[10];
-model.batchsize=200
+layers=[5];
+model.batchsize=500
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.01; activation='tanhact';
-%lr=0.1; activation='relu';
+%lr=0.02; activation='relu';
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
+model.layersizesinitial=model.layersizes;
 
 model.target=y;
 model.epochs=500;
-model.update=100;
+model.update=50;
 model.l2=1;
-model.l1=0;
+model.l1=1;
 
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
@@ -56,6 +57,7 @@ for layeri=1:(length(layers)-1)
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;
     model.layers(layeri).activation=activation;
+    model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
 
 %model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
@@ -103,8 +105,7 @@ for epoch=1:model.epochs
                 dnetdw=permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]); % dnet/dw
                 
                 dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
-                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
-                
+                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d            
             else
                 dedb=(permute(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,model.batchsize),2),[1 3 2])'.*model.layers(layeri).doutdnet(batchinds,:))';
                 dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
@@ -112,7 +113,6 @@ for epoch=1:model.epochs
             
             model.layers(layeri).grad=dedb';
             if model.layers(layeri).lr~=0
-                
                 
                 l1part=-model.layers(layeri).lr*(model.l1/model.batchsize).*sign(model.layers(layeri).W);
                 l2part=-model.layers(layeri).lr*(model.l2/model.batchsize).*model.layers(layeri).W;

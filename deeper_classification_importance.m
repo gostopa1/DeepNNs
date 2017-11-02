@@ -37,6 +37,7 @@ lr=0.1; activation='logsi';
 model.l2=0;
 model.l1=0;
 model.layersizes=[layers];
+model.layersizesinitial=model.layersizes;
 model.target=y;
 model.epochs=200;
 model.update=50;
@@ -47,7 +48,8 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
     model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
-    model.layers(layeri).activation=activation; 
+    model.layers(layeri).activation=activation;
+    model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
 model.layers(2).lr=lr*10;
 
