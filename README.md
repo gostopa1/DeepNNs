@@ -4,9 +4,10 @@ This is a toolbox for deep neural networks implemented in MATLAB. It supports cl
 - Flexibility for error functions (quadratic loss, cross-entropy)
 - Visualization of network architectures (show_network)
 - Minibatch training
-- L1 and L2 regularization
+- L1 and L2 regularization (see deeper_classification_regularization.m tutorial)
 - Importance extraction methods (OD, LRP) in a flexible manner.
 - Allows separate learning rate for each layer and even for each connection
+- Feature Elimination (FE) which in combination with regularizers it removes non-important nodes. (see deeper_classification_regularization_feature_elimination.m tutorial)
 
 <img src="./images/example_image.png" align="left" height="600" width="350" ></a>
 
