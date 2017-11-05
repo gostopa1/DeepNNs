@@ -19,9 +19,12 @@ for epoch=1:model.epochs
 
     end
     %%Forward passing
-    %prev_model=model; % In case of NaN it is useful to see what was the previous model that led to this NaN values
+    %prev_model=model; In case of NaN it is useful to see what was the
+    %previous model that led to this NaN values
     model=vectorize_all_weights(model);
     [model,model.out(:,:,epoch)]=forwardpassing(model,model.x);
+    
+    
     [model.error(epoch),dedout]=feval(model.errofun,model);
     
     randomized_sample_indices=randperm(model.N); % Randomize the sample to randomly select samples for mini-batch

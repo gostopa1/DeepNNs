@@ -30,14 +30,24 @@ for layeri=1:(length(model.layers))
     model.layersizes(layeri)=length(nodeinds);
     model.layers(layeri).inds=model.layers(layeri).inds(nodeinds);
     model.layersizes(layeri)=model.layersizes(layeri);
-    
+    model.layers(layeri).X=model.layers(layeri).X(:,nodeinds);
     if layeri>1
         model.layers(layeri-1).W=model.layers(layeri-1).W(:,nodeinds);
         model.layers(layeri-1).out=model.layers(layeri-1).out(:,nodeinds);
-        model.layers(layeri-1).grad=model.layers(layeri-1).grad(:,nodeinds);
-        model.layers(layeri-1).doutdnet=model.layers(layeri-1).doutdnet(:,nodeinds);
+        
+        
         model.layers(layeri-1).Ws(2)=length(nodeinds);
         model.layers(layeri-1).B=model.layers(layeri-1).B(nodeinds);
+        
+        if isfield(model.layers(layeri-1),'grad') && ~isempty(model.layers(layeri-1).grad)
+            model.layers(layeri-1).grad=model.layers(layeri-1).grad(:,nodeinds);
+        end
+        
+        if isfield(model.layers(layeri-1),'doutdnet') && ~isempty(model.layers(layeri-1).doutdnet)
+            model.layers(layeri-1).doutdnet=model.layers(layeri-1).doutdnet(:,nodeinds);
+        end
+        
+        
     else
         model.x=model.x(:,nodeinds);
     end

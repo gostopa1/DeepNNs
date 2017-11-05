@@ -1,7 +1,7 @@
 function model=model_train(model,x,y)
 
 [model,out(:,:,1)]=forwardpassing(model,model.x);
-
+fnzl=find_first_non_zero_layer(model);
 for epoch=1:model.epochs
     model.epoch=epoch;
     if mod(epoch,model.update)==0
@@ -21,13 +21,13 @@ for epoch=1:model.epochs
     %%Forward passing
     %prev_model=model; % In case of NaN it is useful to see what was the previous model that led to this NaN values
     model=vectorize_all_weights(model);
-    [model,model.out(:,:,epoch)]=forwardpassing(model,model.x);
+    [model,model.out(:,:,epoch)]=forwardpassing_nolr(model,model.x);
     [model.error(epoch),dedout]=feval(model.errofun,model);
     
     randomized_sample_indices=randperm(model.N); % Randomize the sample to randomly select samples for mini-batch
     randomized_sample_indices=[randomized_sample_indices randomized_sample_indices]; % In case N is not a integer multiple of the the minibatch size, this avoids errors by adding the same vector twice
     for batchi=1:model.batchsize:model.N
-        for layeri=(length(model.layers)):-1:find_first_non_zero_layer(model)
+        for layeri=(length(model.layers)):-1:fnzl
             clear dedw dedb
             
             ins=model.layers(layeri).Ws(1);
