@@ -38,6 +38,7 @@ lr=0.01; activation='tanhact';
 model.l2=0;
 model.l1=0;
 model.layersizes=[layers];
+model.layersizesinitial=model.layersizes;
 model.target=y;
 model.epochs=500;
 model.update=100;
@@ -136,6 +137,7 @@ for pointi=1:size(test_data,1)
     mat(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9)=out_test(pointi,1);
 end
 contour(mat,[0.25 0.5 0.75],'LineWidth',3)
+test_labs=xor(x_test<0.5,y_test<0.5);
 for pointi=1:size(test_data,1)
     if out_test(pointi,1)>0
         dotcol='k';
@@ -143,6 +145,7 @@ for pointi=1:size(test_data,1)
         dotcol='r';
     end
     m=plot(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9,[dotcol '.']);
+    %text(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9,num2str(test_labs(pointi)));
     set(m,'MarkerSize',abs(out_test(pointi,1))*factor+5)
 end
 set(gca,'XTick',[1 11],'XTickLabel',[0 1]);
