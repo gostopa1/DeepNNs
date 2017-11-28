@@ -27,13 +27,13 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 clear model
 
 layers=[5];
-model.batchsize=500
+model.batchsize=100
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.01; activation='tanhact';
-%lr=0.02; activation='relu';
+lr=0.05; activation='tanhact';
+%lr=0.01; activation='relu';
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
@@ -44,6 +44,7 @@ model.epochs=500;
 model.update=50;
 model.l2=1;
 model.l1=1;
+model.stopthres=0.0001;
 
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
@@ -53,14 +54,14 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)];
     %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
-    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri));
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*(1/model.layersizes(layeri));
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*sqrt(2/model.layersizes(layeri));
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;
     model.layers(layeri).activation=activation;
     model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
 
-%model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
 model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
 %% Model training
 
@@ -68,6 +69,7 @@ clear error
 
 for epoch=1:model.epochs
     model.epoch=epoch;
+    
     if mod(epoch,model.update)==0
         outemp=out(:,:,model.epoch-1);
         %display(['Epoch: ' num2str(model.epoch)])
@@ -86,13 +88,20 @@ for epoch=1:model.epochs
     prev_model=model;
     model=vectorize_all_weights(model);
     [model,out(:,:,epoch)]=forwardpassing(model,x);
-    outnow=out(:,:,epoch);
+    
     
     [error(epoch),dedout]=feval(model.errofun,model);
-    
+    if epoch>2
+        erdif=abs(error(epoch-1)-error(epoch));
+        if(erdif<model.stopthres)
+            display('Error change below stopping threshold! Stopping here...')
+            break
+        end
+    end
     randomized_sample_indices=randperm(N); % Randomize the sample to randomly select samples for mini-batch
     randomized_sample_indices=[randomized_sample_indices randomized_sample_indices]; % In case N is not a integer multiple of the the minibatch size, this avoids errors by adding the same vector twice
     for batchi=1:model.batchsize:N
+    %for batchi=1
         for layeri=(length(model.layers)):-1:1
             clear dedw dedb
             

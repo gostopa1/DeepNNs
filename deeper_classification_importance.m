@@ -2,6 +2,7 @@ clear
 addpath('./activation_functions')
 addpath('./loss_functions')
 addpath('importance_extraction')
+addpath('aux_functions')
 
 x = [1 1; 1 0; 0 1; 0 0];
 y(:,2) = [1; 0; 0; 1];
@@ -142,6 +143,7 @@ ylabel('Error')
 %%
 %impos=squeeze(mean(extract_OD(model,x),1));
 impos=squeeze(mean(extract_LRP(model,x),1));
+imposWX=squeeze(mean(extract_LRPWX(model,x),1));
 
 
 
