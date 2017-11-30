@@ -72,7 +72,8 @@ for layeri=1:length(model.layersizes)
         set(h,'MarkerSize',50,'Color',nodecol);
     end
 end
-axis([1 length(model.layers)+1 minmax(1:max(model.layersizesinitial))-mean(1:max(model.layersizesinitial))])
+ylims=minmax(1:max(model.layersizesinitial))-mean(1:max(model.layersizesinitial));
+axis([1 length(model.layers)+1 ylims(1)-0.5 ylims(2)+0.5])
 axis off
 box off
 
