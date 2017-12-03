@@ -32,6 +32,7 @@ layers=[5 5 5];
 model.batchsize=500
 noins=size(x,2);
 noouts=size(y,2);
+model.fe_update=100000
 
 layers=[noins layers noouts];
 lr=0.01; activation='tanhact';
@@ -123,5 +124,5 @@ model.layers(1).lr=0;
 model.layers(2).lr=0;
     
 tic
-model=model_train(model);
+model=model_train_nonzeros_winds(model);
 toc

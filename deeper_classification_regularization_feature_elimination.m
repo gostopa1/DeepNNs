@@ -10,7 +10,7 @@ y(:,2) = [1; 0; 0; 1];
 y(:,1) = [0; 1; 1; 0];
 N=size(x,1);
 
-N=1000; x=rand(N,50); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
+N=1000; x=rand(N,10); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
 
 x=zscore(x,[],1);
 
@@ -26,23 +26,23 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization
 clear model
 model.x=x;
-layers=[10];
-model.batchsize=500;
+layers=[5];
+model.batchsize=200;
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.1; activation='tanhact';
-%lr=0.01; activation='relu';
+%lr=0.01; activation='relu';       
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
 model.layersizesinitial=model.layersizes;
 model.target=y;
 model.epochs=1000;
-model.update=100;
-model.fe_update=400;
-model.l2=50;
+model.update=50;
+model.fe_update=250;
+model.l2=1;
 model.l1=0;
 
 model.errofun='quadratic_cost';
