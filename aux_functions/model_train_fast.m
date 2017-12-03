@@ -10,7 +10,7 @@ for layeri=1:(length(model.layers))
 end
 model.epoch=1;
 
-[model,out2(:,:,model.epoch)]=forwardpassing(model,model.x);
+[model,out2(:,:,model.epoch)]=forwardpassing(model,model.x(randperm(model.N,model.batchsize),:));
 
 model.fnzl=find_first_non_zero_layer(model);
 if (length(model.layers)>1) && (model.fnzl==length(model.layers))
@@ -18,14 +18,15 @@ if (length(model.layers)>1) && (model.fnzl==length(model.layers))
     return;
 end
 
-
 for epoch=1:model.epochs
     batchinds=randperm(model.N,model.batchsize);
     model.target=model.y(batchinds,:);
     model.epoch=epoch;
     if mod(epoch,model.update)==0
         % Now it is time to show an update of the network.
-        
+        if sum(rem(model.target,1)==model.target)==length(model.target)
+            display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',model.error(epoch-1))]);
+        else
         % If there is a test set, calculate the accuracy for it
         if sum(isfield(model,{'x_test','y_test'}))==2
             epochtemp=model.epoch; model.epoch=0;
@@ -37,6 +38,7 @@ for epoch=1:model.epochs
         end
         [~,out_train]=forwardpassing(model,model.x);
         display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
+        end
     end
     % Should I perform feature elimination
     if mod(epoch,model.fe_update)==0
