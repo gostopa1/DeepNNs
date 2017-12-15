@@ -20,7 +20,7 @@ x=zscore(x,[],1);
 
 %test_data=[x_test(: ) y_test(:)];
 test_data=zscore([x_test(: ) y_test(:)],1);
-
+test_labs=xor(test_data(:,1)<0.5,test_data(:,2)<0.5); test_labs(:,2) = 1 - test_labs(:,1);
 %x=x/max(x(:)); test_data=test_data/max(abs(test_data(:)));
 
 %% Model Initialization
@@ -28,13 +28,14 @@ clear model
 
 model.N=N;
 model.x=x;
-layers=[5 5 5];
+model.y=y;
+layers=[5 10];
 model.batchsize=500
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.01; activation='tanhact';
+lr=0.05; activation='tanhact';
 %lr=0.02; activation='relu';
 %lr=0.05; activation='logsi';
 
@@ -42,11 +43,12 @@ model.layersizes=[layers];
 model.layersizesinitial=model.layersizes;
 
 model.target=y;
-model.epochs=500;
-model.update=510;
+model.epochs=1000;
+model.update=100;
 model.l2=1;
 model.l1=1;
-
+model.fe_update=10000;
+model.fe_update=10000;
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
 for layeri=1:(length(layers)-1)
@@ -69,17 +71,19 @@ model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
 
 clear error
 tic 
-model=model_train(model)
-toc
-show_network
+model=model_train_fast(model);
+display(['Training all layers took ' sprintf('%2.2f',toc) ' seconds'])
+figure(1)
+clf
+subplot(4,1,[1 2])
+show_network(model)
 %save_figure
 %% Visual evaluation
 
 model.test=0;
-[model,out_test]=forwardpassing(model,[test_data]);
+[~,out_test]=forwardpassing(model,[test_data]);
 factor=15;
-figure(1)
-%clf
+
 subplot(4,1,3)
 hold on
 
@@ -108,20 +112,31 @@ xlabel('Epoch')
 ylabel('Error')
 
 %% Numerical evaluation (i.e. classification accuracy, etc.)
+[~,out_test]=forwardpassing_nolr(model,test_data);
 
-[~,indpre]=max(model.out(:,:,end)');
-
-%indpre-1
-[~,indtarget]=max(model.target');
-perf=(sum(indpre==indtarget)/length(indpre))*100;
-display([sprintf('Performance : %3.2f%%',perf)])
+display([sprintf('Performance : %3.2f%%',get_perf(out_test,test_labs))])
 
 %%
 
-
 model.layers(1).lr=0;
 model.layers(2).lr=0;
-    
 tic
-model=model_train(model);
-toc
+
+model=model_train_fast(model);
+display(['Training only layers ' sprintf('%2.2f',toc) ' seconds'])
+
+
+figure(2)
+clf
+
+subplot(4,1,[1 2])
+show_network(model)
+
+subplot(4,1,4)
+plot(model.error)
+
+
+
+[~,out_test]=forwardpassing(model,test_data);
+
+display([sprintf('Performance : %3.2f%%',get_perf(out_test,test_labs))])

@@ -22,7 +22,7 @@ for outi=1:noouts
     
     
     for layeri=length(model.layers):-1:1
-        R=R.*(model.layers(end).X*model.layers(end).W+repmat(model.layers(end).B,1,size(x,1))');;    
+        R=R.*(model.layers(layeri).X*model.layers(layeri).W+repmat(model.layers(layeri).B,1,size(x,1))');    
         n=model.layersizes(layeri+1);
         m=model.layersizes(layeri);
         

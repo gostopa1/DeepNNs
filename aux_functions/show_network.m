@@ -1,7 +1,5 @@
+function show_network(model)
 
-figure(1)
-clf
-subplot(4,1,[1 2])
 hold on
 linefactor=2;
 for layeri=1:(length(model.layersizes)-1)
@@ -76,5 +74,7 @@ ylims=minmax(1:max(model.layersizesinitial))-mean(1:max(model.layersizesinitial)
 axis([1 length(model.layers)+1 ylims(1)-0.5 ylims(2)+0.5])
 axis off
 box off
+
+end
 
 %%

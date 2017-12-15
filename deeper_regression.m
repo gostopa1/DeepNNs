@@ -1,5 +1,6 @@
 clear
 addpath('./activation_functions')
+addpath('./aux_functions')
 addpath('./loss_functions')
 N=500;
 x=randn(N,1);
@@ -95,7 +96,9 @@ for epoch=1:model.epochs
     end
     
     if mod(epoch,model.update)==0
-        show_network
+        figure(clf)
+        subplot(4,1,[1 2])
+        show_network(model)
         drawnow
     end
 end
@@ -120,3 +123,6 @@ set(h,'MarkerSize',ms)
 
 subplot(4,1,4)
 plot(error)
+
+ylabel('Error')
+ylabel('Epoch')

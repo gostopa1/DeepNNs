@@ -10,7 +10,7 @@ y(:,2) = [1; 0; 0; 1];
 y(:,1) = [0; 1; 1; 0];
 N=size(x,1);
 
-N=1000; x=rand(N,50); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
+N=1000; x=rand(N,10); y=xor(x(:,1)<0.5,x(:,2)<0.5); y(:,2) = 1 - y(:,1);
 
 x=zscore(x,[],1);
 
@@ -42,8 +42,10 @@ model.target=y;
 model.epochs=1000;
 model.update=100;
 model.fe_update=400;
-model.l2=50;
-model.l1=0;
+model.fe_thres=0.01;
+
+model.l2=0;
+model.l1=2;
 
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
@@ -53,13 +55,13 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)];
     %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
-    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri));
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*sqrt(2/(model.layersizes(layeri)+model.layersizes(layeri+1)));
     
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;
     model.layers(layeri).activation=activation;
     model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
-model.fe_thres=[0.5 0 0 0]; % The feature elimination threshold can be either one per layer or a universal one
+model.fe_thres=[0.1 0 0 0]; % The feature elimination threshold can be either one per layer or a universal one
 %model.fe_thres=0.0;
 
 model.layers(layeri).lr=lr; model.layers(layeri).activation='softmaxact';
@@ -109,7 +111,7 @@ for epoch=1:model.epochs
                 dnetdw=permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]); % dnet/dw
                 
                 dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
-                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d            
+                dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
             else
                 dedb=(permute(sum(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[3 2 1]).*repmat(model.layers(layeri+1).W,1,1,model.batchsize),2),[1 3 2])'.*model.layers(layeri).doutdnet(batchinds,:))';
                 dedw=permute(repmat(dedb,1,1,ins),[3 1 2]).*permute(repmat(model.layers(layeri).X(batchinds,:),1,1,outs),[2 3 1]);
@@ -135,11 +137,14 @@ for epoch=1:model.epochs
     end
     
     if mod(epoch,model.update)==0
-        show_network
+        figure(1)
+        clf
+        subplot(4,1,[1 2])
+        show_network(model)
         drawnow
     end
 end
-show_network
+show_network(model)
 model2=model;
 %return
 %save_figure
@@ -147,14 +152,17 @@ model2=model;
 
 model.test=0;
 try
-[model,out_test]=forwardpassing(model,[test_data]);
+    [model,out_test]=forwardpassing(model,[test_data]);
 catch
     display('The remaining inputs do not match the test_data')
     return
 end
 factor=15;
 figure(1)
-%clf
+clf
+subplot(4,1,[1 2])
+show_network(model)
+
 subplot(4,1,3)
 hold on
 

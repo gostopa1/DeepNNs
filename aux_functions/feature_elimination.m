@@ -7,7 +7,8 @@ end
 %
 
 
-show_network
+show_network(model)
+
 for layeri=1:(length(model.layers))
     
     
@@ -30,7 +31,7 @@ for layeri=1:(length(model.layers))
     model.layersizes(layeri)=length(nodeinds);
     model.layers(layeri).inds=model.layers(layeri).inds(nodeinds);
     model.layersizes(layeri)=model.layersizes(layeri);
-    model.layers(layeri).X=model.layers(layeri).X(:,nodeinds);
+
     if layeri>1
         model.layers(layeri-1).W=model.layers(layeri-1).W(:,nodeinds);
         model.layers(layeri-1).out=model.layers(layeri-1).out(:,nodeinds);

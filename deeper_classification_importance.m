@@ -52,7 +52,8 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).activation=activation;
     model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
 end
-model.layers(2).lr=lr*10;
+%model.layers(2).lr=lr*10;
+model.layers(end).activation='softmaxact';
 
 %% Model training
 
@@ -98,7 +99,7 @@ for epoch=1:model.epochs
     end
     
     if mod(epoch,model.update)==0
-        show_network
+        show_network(model)
         drawnow
     end
 end
@@ -109,7 +110,10 @@ model.test=0;
 [model,out_test]=forwardpassing(model,[test_data]);
 factor=15;
 figure(1)
-%clf
+clf
+subplot(4,1,[1 2])
+show_network(model)
+
 subplot(4,1,3)
 hold on
 
@@ -143,7 +147,9 @@ ylabel('Error')
 %%
 %impos=squeeze(mean(extract_OD(model,x),1));
 impos=squeeze(mean(extract_LRP(model,x),1));
-imposWX=squeeze(mean(extract_LRPWX(model,x),1));
+impos=squeeze(mean(extract_LRPWXOLD(model,x),1));
+impos=squeeze(mean(extract_LRPWXOLD2(model,x),1));
+
 
 
 

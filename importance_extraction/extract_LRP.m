@@ -3,6 +3,8 @@ function [impos,model]=extract_LRP(model,x)
 % The importances for each layer are also estimated if a second ouput
 % argument is requested. The output is the model and the importance per
 % layer are stored in model.layers(layer_number).R
+% This method uses only the weights to estimate importances, hence is prone
+% to overfitting
 out=model.layers(end).out;
 nosamples=size(out,1);
 

@@ -27,7 +27,7 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 clear model
 
 layers=[5];
-model.batchsize=100
+model.batchsize=100;
 noins=size(x,2);
 noouts=size(y,2);
 
@@ -140,11 +140,13 @@ for epoch=1:model.epochs
     end
     
     if mod(epoch,model.update)==0
-        show_network
+        subplot(4,1,[1 2])
+        show_network(model)
         drawnow
     end
 end
-show_network
+show_network(model)
+
 %save_figure
 %% Visual evaluation
 
@@ -152,7 +154,10 @@ model.test=0;
 [model,out_test]=forwardpassing(model,[test_data]);
 factor=15;
 figure(1)
-%clf
+clf
+subplot(4,1,[1 2 ])
+show_network(model)
+
 subplot(4,1,3)
 hold on
 

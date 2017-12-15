@@ -13,14 +13,14 @@ nosamples=size(x,1);
 noouts=model.layersizes(end);
 for outi=1:noouts
     %layeri=length(model.layers);
-    %R=model.layers(length(model.layers)).out;
-    R=model.layers(length(model.layers)).out.*(model.layers(end).X*model.layers(end).W+repmat(model.layers(end).B,1,size(x,1))');;
+    R=model.layers(length(model.layers)).out;
+    %R=model.layers(length(model.layers)).out.*(model.layers(end).X*model.layers(end).W+repmat(model.layers(end).B,1,size(x,1))');;
     
     R(:,setxor(1:noouts,outi))=0;
     
     %preacts=X*W+repmat(B,1,size(X,1))'
     layeri=1;
-    %for layeri=length(model.layers):-1:1
+    for layeri=length(model.layers):-1:1
         n=model.layersizes(layeri+1);
         m=model.layersizes(layeri);
         N=nosamples;
@@ -35,7 +35,7 @@ for outi=1:noouts
         R=sum((Z./repmat(Zs,1,m,1)).*Rr,3);
         
         model.layers(layeri).R(:,:,outi)=R;
-    %end
+    end
     
     
     impos(:,:,outi)=R;

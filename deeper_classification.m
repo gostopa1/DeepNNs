@@ -26,18 +26,19 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization
 clear model
 
-layers=[5];
+layers=[10];
 model.batchsize=200
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.01; activation='tanhact';
+lr=0.05; activation='tanhact';
 %lr=0.01; activation='relu';
 %lr=0.1; activation='logsi';
 model.l2=0;
 model.l1=0;
 model.layersizes=[layers];
+model.layersizesinitial=model.layersizes;
 model.target=y;
 model.epochs=500;
 model.update=100;
@@ -114,13 +115,15 @@ for epoch=1:model.epochs
     end
     
     if mod(epoch,model.update)==0
-        show_network
+        figure(1)
+        subplot(2,1,1)
+        show_network(model)
         drawnow
     end
   %model.layers(end).grad
   %pause
 end
-show_network
+show_network(model)
 %save_figure
 %% Visual evaluation
 
@@ -128,7 +131,10 @@ model.test=0;
 [model,out_test]=forwardpassing(model,[test_data]);
 factor=15;
 figure(1)
-%clf
+clf
+subplot(4,1,[1 2])
+show_network(model)
+
 subplot(4,1,3)
 hold on
 
