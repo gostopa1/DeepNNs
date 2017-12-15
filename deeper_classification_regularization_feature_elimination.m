@@ -26,26 +26,33 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization
 clear model
 model.x=x;
-layers=[10];
-model.batchsize=500;
+layers=[5];
+model.batchsize=200;
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
 lr=0.1; activation='tanhact';
-%lr=0.01; activation='relu';
+%lr=0.01; activation='relu';       
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
 model.layersizesinitial=model.layersizes;
 model.target=y;
 model.epochs=1000;
+<<<<<<< HEAD
 model.update=100;
 model.fe_update=400;
 model.fe_thres=0.01;
 
 model.l2=0;
 model.l1=2;
+=======
+model.update=50;
+model.fe_update=250;
+model.l2=1;
+model.l1=0;
+>>>>>>> d04749cc17e68656c177e4aa38eef03cfe7cb252
 
 model.errofun='quadratic_cost';
 model.errofun='cross_entropy_cost';
