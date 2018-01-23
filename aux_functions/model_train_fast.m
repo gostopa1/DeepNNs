@@ -27,17 +27,17 @@ for epoch=1:model.epochs
         if sum(rem(model.target,1)==model.target)==length(model.target)
             display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',model.error(epoch-1))]);
         else
-        % If there is a test set, calculate the accuracy for it
-        if sum(isfield(model,{'x_test','y_test'}))==2
-            epochtemp=model.epoch; model.epoch=0;
-            [~,out_test]=forwardpassing(model,model.x_test(:,model.layers(1).inds)); get_perf(out_test,model.y_test);
-            model.epoch=epochtemp;
-            y_test_str=[' - Test: ' sprintf('%2.2f', get_perf(out_test,model.y_test))];
-        else
-            y_test_str='';
-        end
-        [~,out_train]=forwardpassing(model,model.x);
-        display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
+            % If there is a test set, calculate the accuracy for it
+            if sum(isfield(model,{'x_test','y_test'}))==2
+                epochtemp=model.epoch; model.epoch=0;
+                [~,out_test]=forwardpassing(model,model.x_test(:,model.layers(1).inds)); get_perf(out_test,model.y_test);
+                model.epoch=epochtemp;
+                y_test_str=[' - Test: ' sprintf('%2.2f', get_perf(out_test,model.y_test))];
+            else
+                y_test_str='';
+            end
+            [~,out_train]=forwardpassing(model,model.x);
+            display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
         end
     end
     % Should I perform feature elimination
@@ -51,8 +51,13 @@ for epoch=1:model.epochs
     %[model,out(:,:,epoch)]=forwardpassing_nolr(model,model.x(batchinds,:));
     [model,out(:,:,epoch)]=forwardpassing_nolr(model,model.x(batchinds,:));
     
-    [model.error(epoch),dedout]=feval(model.errofun,model);
-    
+    if strcmp(model.errofun,'cross_entropy_cost')
+        [model.error(epoch),dedout]=cross_entropy_cost(model);
+    elseif strcmp(model.errofun,'quadratic_cost')
+        [model.error(epoch),dedout]=quadratic_cost(model);
+    else
+        [model.error(epoch),dedout]=feval(model.errofun,model);
+    end
     
     for layeri=(length(model.layers)):-1:model.fnzl
         clear dedw dedb
