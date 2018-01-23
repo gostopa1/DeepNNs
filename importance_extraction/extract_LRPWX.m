@@ -14,31 +14,32 @@ noouts=model.layersizes(end);
 for outi=1:noouts
     %layeri=length(model.layers);
     R=model.layers(length(model.layers)).out;
+    %R=model.layers(length(model.layers)).out.*(model.layers(end).X*model.layers(end).W+repmat(model.layers(end).B,1,size(x,1))');;
     
     R(:,setxor(1:noouts,outi))=0;
     
     %preacts=X*W+repmat(B,1,size(X,1))'
+    layeri=1;
     for layeri=length(model.layers):-1:1
-        
+        n=model.layersizes(layeri+1);
+        m=model.layersizes(layeri);
+        N=nosamples;
         %Now it implements simple W.^2 importance extraction
         Wr=permute(repmat(model.layers(layeri).W,1,1,nosamples),[3 1 2]);
-        Xr=repmat(model.layers(layeri).X,1,1,model.layersizes(layeri+1));
+        Xr=repmat(model.layers(layeri).X,1,1,n);
         Br=permute(repmat(model.layers(layeri).B,1,model.layersizes(layeri),nosamples),[3 2 1]);
-        preact=Wr.*Xr+Br;
+        preact=(Wr.*Xr+Br);
+        Z=Wr.*Xr;
+        Zs=sum(Z,2);
+        Rr=repmat(permute(R,[1 3 2]),1,m,1);
+        R=sum((Z./repmat(Zs,1,m,1)).*Rr,3);
         
-        
-        
-
-        %preact=repmat(sum(preact,2),1,model.layersizes(layeri),1);
-
-        outsR=permute(repmat(R,1,1,model.layersizes(layeri)),[1 3 2]);
-        
-        
-        R=mean(preact.*outsR,3);
-        model.layers(layeri).R=R;
+        model.layers(layeri).R(:,:,outi)=R;
     end
     
+    
     impos(:,:,outi)=R;
+    %impos=model.layers(layeri).R(:,:,outi);
 end
 
 end
