@@ -23,7 +23,7 @@ for outi=1:noouts
     for layeri=length(model.layers):-1:1
         n=model.layersizes(layeri+1);
         m=model.layersizes(layeri);
-        N=nosamples;
+        
         %Now it implements simple W.^2 importance extraction
         Wr=permute(repmat(model.layers(layeri).W,1,1,nosamples),[3 1 2]);
         Xr=repmat(model.layers(layeri).X,1,1,n);

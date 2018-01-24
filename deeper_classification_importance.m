@@ -24,7 +24,7 @@ test_data=zscore([x_test(: ) y_test(:)],1);
 %% Model Initialization 
 clear model
 
-layers=[5];
+layers=[5 2];
 model.batchsize=50
 noins=size(x,2);
 noouts=size(y,2);
@@ -146,9 +146,13 @@ ylabel('Error')
 
 %%
 %impos=squeeze(mean(extract_OD(model,x),1));
-impos=squeeze(mean(extract_LRP(model,x),1));
-impos=squeeze(mean(extract_LRPWXOLD(model,x),1));
-impos=squeeze(mean(extract_LRPWXOLD2(model,x),1));
+%impos=squeeze(mean(extract_LRP(model,x),1));
+impos=squeeze(mean(extract_LRPWX(model,x),1));
+
+
+% If you wish to take the importance of the average sample (not good practice but saves memory)
+impos=squeeze(mean(extract_LRPWX(model,mean(x,1)),1));
+
 
 
 
