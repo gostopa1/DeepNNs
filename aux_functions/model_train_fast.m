@@ -25,7 +25,7 @@ for epoch=1:model.epochs
     if mod(epoch,model.update)==0
         % Now it is time to show an update of the network.
         if sum(rem(model.target,1)==model.target)==length(model.target)
-            display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',model.error(epoch-1))]);
+            display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.10f',model.error(epoch-1))]);
         else
             % If there is a test set, calculate the accuracy for it
             if sum(isfield(model,{'x_test','y_test'}))==2
@@ -89,7 +89,7 @@ for epoch=1:model.epochs
         mdedw=permute(mean(dedw,1),[2 3 1]);
         
         %model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr(model.layers(layeri).nonzeroinds).*mdedw(model.layers(layeri).nonzeroinds);
-        model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr.*mdedw(model.layers(layeri).nonzeroinds);
+        model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr(model.layers(layeri).nonzeroinds).*mdedw(model.layers(layeri).nonzeroinds);
         model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr.*mean(dedb,2);
         
         
