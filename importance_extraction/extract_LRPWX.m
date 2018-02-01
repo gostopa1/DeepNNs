@@ -1,4 +1,4 @@
-function [impos,model]=extract_LRPWX(model,x)
+function [impos,imps_per_layer]=extract_LRPWX(model,x)
 %% Output is samples x inputs x outputs
 % The importances for each layer are also estimated if a second ouput
 % argument is requested. The output is the model and the importance per
@@ -34,7 +34,8 @@ for outi=1:noouts
         Rr=repmat(permute(R,[1 3 2]),1,m,1);
         R=sum((Z./repmat(Zs,1,m,1)).*Rr,3);
         
-        model.layers(layeri).R(:,:,outi)=R;
+        %model.layers(layeri).R(:,:,outi)=R;
+        imps_per_layer(layeri).R=R;
     end
     
     
