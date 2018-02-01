@@ -1,4 +1,4 @@
-function model=model_train_fast(model)
+function [model,best_model]=model_train_fast(model)
 %% This is an altered version of the model_train function, aiming to speed up training.
 %% To speed up training three approaches:
 %%      - Only weights that are non-zero are updated
@@ -59,6 +59,11 @@ for epoch=1:model.epochs
         [model.error(epoch),dedout]=feval(model.errofun,model);
     end
     
+    if epoch>1
+        if model.error(epoch)==min(model.error(:))
+            best_model=model;
+        end
+    end
     for layeri=(length(model.layers)):-1:model.fnzl
         clear dedw dedb
         ins=model.layers(layeri).Ws(1);
