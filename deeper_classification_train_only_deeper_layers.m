@@ -124,7 +124,7 @@ model.layers(2).lr=0;
 tic
 
 model=model_train_fast(model);
-display(['Training only layers ' sprintf('%2.2f',toc) ' seconds'])
+display(['Training only layer 3 took '  sprintf('%2.2f',toc) ' seconds'])
 
 
 figure(2)
@@ -139,6 +139,3 @@ plot(model.error)
 [~,out_test]=forwardpassing(model,test_data);
 
 display([sprintf('Performance : %3.2f%%',get_perf(out_test,test_labs))])
-
-model=model_train_nonzeros_winds(model);
-toc
