@@ -5,6 +5,7 @@ function [model,best_model]=model_train_fast(model)
 %%      - Only layers that have non-zero learning rate are updated (obvious but now the caculations are ommited)
 %%      - Only one batch is used per epoch
 %%      - Output and gradients are not re-calculated if learning rate is 0
+
 for layeri=1:(length(model.layers))
     model.layers(layeri).nonzeroinds=find(model.layers(layeri).W~=0);
 end
@@ -17,6 +18,8 @@ if (length(model.layers)>1) && (model.fnzl==length(model.layers))
     display('All learning rates are zero. The model will be identical! No point continuing!');
     return;
 end
+
+best_model=model;
 
 for epoch=1:model.epochs
     batchinds=randperm(model.N,model.batchsize);
