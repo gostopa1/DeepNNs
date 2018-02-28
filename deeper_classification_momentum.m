@@ -79,7 +79,12 @@ model.layers(layeri).lr=lr/1; model.layers(layeri).activation='softmaxact';
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
 
 %% Model training
+display('Training with SGD')
+
 model_simple=model_train_fast(model);
+display(' ')
+display('Training with Variation')
+
 model_momentum=model_train_fast_momentum(model);
 %%
 figure(1)
@@ -89,6 +94,8 @@ plot(model_simple.error,'k','LineWidth',2)
 plot(model_momentum.error,'r')
 hold off
 legend('Simple','Algorithm Variation')
+xlabel('Epochs')
+ylabel('Error')
 return
 show_network(model)
 %save_figure
