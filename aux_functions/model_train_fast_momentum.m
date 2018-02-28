@@ -6,12 +6,39 @@ function [model,best_model]=model_train_fast(model)
 %%      - Only one batch is used per epoch
 %%      - Output and gradients are not re-calculated if learning rate is 0
 
+
 for layeri=1:(length(model.layers))
     model.layers(layeri).nonzeroinds=find(model.layers(layeri).W~=0);
 end
+if ~isfield(model,'optimizer')
+    display('No optimizer was selected')
+    display('Setting SGD as the optimizer')
+    model.optimizer='SGD';
+end
+for layeri=1:(length(model.layers))
+    if strcmp(model.optimizer,'SGD')
+    elseif strcmp(model.optimizer,'SGD_m')
+        model.layers(layeri).mdedw=model.layers(layeri).W*0;
+    elseif strcmp(model.optimizer,'RMSprop')
+        model.layers(layeri).mdedw=model.layers(layeri).W*0;
+        model.layers(layeri).mdedw_sq=model.layers(layeri).W*0; % This is necessary for the RMSprop
+    elseif strcmp(model.optimizer,'RMSprop_m')
+        model.layers(layeri).mdedw=model.layers(layeri).W*0;
+        model.layers(layeri).mdedw_sq=model.layers(layeri).W*0; % This is necessary for the RMSprop
+    elseif strcmp(model.optimizer,'ADAM')
+        model.layers(layeri).mdedw=model.layers(layeri).W*0;
+        model.layers(layeri).m=model.layers(layeri).W*0;
+        model.layers(layeri).u=model.layers(layeri).W*0;
+    else
+        display('No proper optimizer was chosen.')
+        display('Setting SGD as the optimizer')
+        model.optimizer='SGD';
+    end
+end
+
 model.epoch=1;
 
-[model,out2(:,:,model.epoch)]=forwardpassing(model,model.x(randperm(model.N,model.batchsize),:));
+[model,~]=forwardpassing(model,model.x(randperm(model.N,model.batchsize),:));
 
 model.fnzl=find_first_non_zero_layer(model);
 if (length(model.layers)>1) && (model.fnzl==length(model.layers))
@@ -92,30 +119,46 @@ for epoch=1:model.epochs
         l2part=-model.layers(layeri).lr*(model.l2/model.batchsize).*model.layers(layeri).W;
         regularization_term=model.layers(layeri).W+l1part+l2part;
         
-        %% SGD - No Momentum
-        %mdedw=permute(mean(dedw,1),[2 3 1]);
-        %model.layers(layeri).mdedw=mdedw
-        
-        %% SGD - with momentum
-        %g=0.9;
-        %mdedw=permute(mean(dedw,1),[2 3 1]);
-        %model.layers(layeri).mdedw=(g)*mdedw+(1-g)*model.layers(layeri).mdedw;
-        
-        %% RMSprop - no momentum
-        %mdedw=permute(mean(dedw,1),[2 3 1]);        
-        %model.layers(layeri).mdedw_sq=(model.layers(layeri).g)*model.layers(layeri).mdedw_sq+(1-model.layers(layeri).g)*mdedw.^2;
-        %model.layers(layeri).mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+10^(-8));
-        
-        %% RMSprop - with momentum
-        g1=0.9;
-        g=0.9;
-        epsil=10^(-8);
-        
-        mdedw=permute(mean(dedw,1),[2 3 1]);      
-        model.layers(layeri).mdedw_sq=(g1)*model.layers(layeri).mdedw_sq+(1-g1)*mdedw.^2;
-        mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+epsil);
-        model.layers(layeri).mdedw=(g)*model.layers(layeri).mdedw+(1-g)*mdedw;
-        
+        if strcmp(model.optimizer,'SGD')
+            %% SGD - No Momentum
+            mdedw=permute(mean(dedw,1),[2 3 1]);
+            model.layers(layeri).mdedw=mdedw;
+            
+        elseif strcmp(model.optimizer,'SGD_m')
+            %% SGD - with momentum
+            g=0.9;
+            mdedw=permute(mean(dedw,1),[2 3 1]);
+            model.layers(layeri).mdedw=(g)*mdedw+(1-g)*model.layers(layeri).mdedw;
+            
+        elseif strcmp(model.optimizer,'RMSprop')
+            %% RMSprop - no momentum
+            g=0.9;
+            mdedw=permute(mean(dedw,1),[2 3 1]);
+            model.layers(layeri).mdedw_sq=(g)*model.layers(layeri).mdedw_sq+(1-g)*mdedw.^2;
+            model.layers(layeri).mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+10^(-8));
+            
+        elseif strcmp(model.optimizer,'RMSprop_m')
+            %% RMSprop - with momentum
+            g1=0.9;
+            g=0.9;
+            epsil=10^(-8);
+            mdedw=permute(mean(dedw,1),[2 3 1]);
+            model.layers(layeri).mdedw_sq=(g1)*model.layers(layeri).mdedw_sq+(1-g1)*mdedw.^2;
+            mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+epsil);
+            model.layers(layeri).mdedw=(g)*model.layers(layeri).mdedw+(1-g)*mdedw;
+            
+            %% ADAM
+        elseif strcmp(model.optimizer,'ADAM')
+            b1=0.9;
+            b2=0.99;
+            epsil=10^(-8);
+            model.layers(layeri).mdedw=permute(mean(dedw,1),[2 3 1]);
+            model.layers(layeri).m=b1*model.layers(layeri).m+(1-b1)*model.layers(layeri).mdedw;
+            model.layers(layeri).u=b2*model.layers(layeri).u+(1-b2)*model.layers(layeri).mdedw.^2;
+            model.layers(layeri).mdedw=(model.layers(layeri).m./(1-b1^epoch))./(sqrt((model.layers(layeri).u./(1-b2^epoch)))+epsil);
+        else
+            display('Hey you have not chosen any optimizer!');
+        end
         %% Now updating the weights
         
         if length(model.layers(layeri).lr)>1

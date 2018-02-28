@@ -59,15 +59,11 @@ for layeri=1:(length(layers)-1)
     
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri));
     
-    model.layers(layeri).mdedw=(zeros(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri)); % This is necessary when momentum is implemented, since we always need the previous gradient.
-    model.layers(layeri).mdedw_sq=(zeros(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri)); % This is necessary for the RMSprop
-    model.layers(layeri).momentum=(zeros(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri)); % This is necessary for the RMSprop with momentum
-    
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/1;
     model.layers(layeri).activation=activation;
     model.layers(layeri).inds=1:model.layersizes(layeri); % To keep track of which nodes are removed etc
-    model.layers(layeri).g=0.99; % If this is set to zero then it is identical to simple gradient descent
+    
 end
 %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/1;
 %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(layers(layeri));
@@ -79,72 +75,19 @@ model.layers(layeri).lr=lr/1; model.layers(layeri).activation='softmaxact';
 %model.layers(layeri).lr=lr/10; model.layers(layeri).activation='tanhact';
 
 %% Model training
-display('Training with SGD')
-
-model_simple=model_train_fast(model);
-display(' ')
-display('Training with Variation')
-
-model_momentum=model_train_fast_momentum(model);
-%%
 figure(1)
 clf
-hold  on
-plot(model_simple.error,'k','LineWidth',2)
-plot(model_momentum.error,'r')
+hold on
+optimizers={'SGD','SGD_m','RMSprop','RMSprop_m','ADAM'};
+for optimizer=optimizers
+    display(optimizer{1});
+    model.optimizer=optimizer{1};
+    display(['Training with ' model.optimizer])
+    model1=model_train_fast_momentum(model);
+    plot(model1.error)
+end
+
+legend(optimizers)
 hold off
-legend('Simple','Algorithm Variation')
 xlabel('Epochs')
 ylabel('Error')
-return
-show_network(model)
-%save_figure
-%% Visual evaluation
-
-model.test=0;
-[model,out_test]=forwardpassing(model,[test_data]);
-factor=15;
-figure(1)
-clf
-subplot(4,1,[1 2])
-show_network(model)
-
-subplot(4,1,3)
-hold on
-
-for pointi=1:size(test_data,1)
-    mat(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9)=out_test(pointi,1);
-end
-contour(mat,[0.25 0.5 0.75],'LineWidth',3)
-test_labs=xor(x_test<0.5,y_test<0.5);
-for pointi=1:size(test_data,1)
-    if out_test(pointi,1)>0
-        dotcol='k';
-    else
-        dotcol='r';
-    end
-    m=plot(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9,[dotcol '.']);
-    %text(((x_test(pointi)+1)*10)-9,((y_test(pointi)+1)*10)-9,num2str(test_labs(pointi)));
-    set(m,'MarkerSize',abs(out_test(pointi,1))*factor+5)
-end
-set(gca,'XTick',[1 11],'XTickLabel',[0 1]);
-set(gca,'YTick',[1 11],'YTickLabel',[0 1]);
-
-%axis off
-%box off
-subplot(4,1,4)
-plot(model.error)
-xlabel('Epoch')
-
-ylabel('Error')
-
-%% Numerical evaluation (i.e. classification accuracy, etc.)
-[model,out]=forwardpassing(model,x);
-
-%[~,indpre]=max(out(:,:,end)');
-[~,indpre]=max(out(:,:)');
-
-%indpre-1
-[~,indtarget]=max(y');
-perf=(sum(indpre==indtarget)/length(indpre))*100;
-display([sprintf('Performance : %3.2f%%',perf)])
