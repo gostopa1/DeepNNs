@@ -7,16 +7,16 @@ This is a toolbox for deep neural networks implemented in MATLAB. It supports cl
 - L1 and L2 regularization (see deeper_classification_regularization.m tutorial)
 - Importance extraction methods (OD, LRP) in a flexible manner.
 - Allows separate learning rate for each layer and even for each connection
-- Selection of optimization algorithms with and without momentum (SGD, RMSprop ; check out in model_train_fast_momentum)
+- Selection of optimization algorithms with and without momentum (SGD, RMSprop, ADAM; check out in model_train_fast_momentum)
 - Feature Elimination (FE) which in combination with regularizers it removes non-important nodes. (see deeper_classification_regularization_feature_elimination.m tutorial)
 
 <img src="./images/example_image.png" align="left" height="600" width="350" ></a>
 
 Observations
 
-- Use cross entropy loss function with softmax activation function in the output layer only. It doesn't make much sense otherwise. And also use of logistic in the other layers gives better results.
+- Use cross entropy loss function with softmax activation function in the output layer only. It doesn't make much sense otherwise.
 - Different activation function may require different learning rates. And then also different amount of training epochs.
-- If the error over time seems to make spiky oscillations, probably it's stuck on the sides of a minimum and the large learning rate does not allow it to go down to the minimum. Reducing learning rate will probably help, increasing minibatch size might also help (more samples seek for a smoother minimum)
+- If the error over time seems to make spiky oscillations, probably it's stuck on the sides of a minimum and the large learning rate does not allow it to go down to the minimum. Reducing learning rate will probably help, increasing minibatch size might also help (more samples seek for a smoother minimum). RMSprop and ADAM with momentum should be able to tackle this issue
 
 To implement next:
 - Total variation regularization
