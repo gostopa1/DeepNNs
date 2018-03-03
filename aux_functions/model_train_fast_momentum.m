@@ -1,4 +1,4 @@
-function [model,best_model]=model_train_fast(model)
+function [model,best_model]=model_train_fast_momentum(model)
 %% This is an altered version of the model_train function, aiming to speed up training.
 %% To speed up training three approaches:
 %%      - Only weights that are non-zero are updated
