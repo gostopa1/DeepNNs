@@ -55,7 +55,7 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)];
     %model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1))-0.5)/10;
-    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*(1/model.layersizes(layeri));
+    
     model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*sqrt(2/model.layersizes(layeri));
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/10;

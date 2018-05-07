@@ -7,7 +7,7 @@ x=randn(N,1);
 %x=x(abs(x)>1);
 N=length(x);
 y=x.^2;
-y=tanh(x)
+%y=tanh(x)
 
 x=x/max(x(:));
 y=y/max(y(:));
@@ -18,15 +18,15 @@ y=y/max(y(:));
 %% Model initialization
 clear model
 
-layers=[5 5];
+layers=[10 10];
 %batchsize=20
 model.batchsize=100
 noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.02; activation='tanhact';
-lr=0.1; activation='relu';
+lr=0.01; activation='tanhact';
+%lr=0.1; activation='relu';
 %lr=0.05; activation='logsi';
 
 model.layersizes=[layers];
@@ -109,16 +109,19 @@ end
 
 subplot(4,1,3)
 hold on
-h=plot(x,y,'b.')
+h1=plot(x,y,'b.')
 ms=10
-set(h,'MarkerSize',ms)
+set(h1,'MarkerSize',ms)
 %plot(x,out,'r.')
+h2=plot(x,squeeze(out(:,:,1)),'.','Color',[[1 0 0] *((1-(1/model.epochs)))]); set(h2,'MarkerSize',ms) % Just plotting the first one to keep it for the legend
+
 for epochi=1:size(out,3)
     h=plot(x,squeeze(out(:,:,epochi)),'.','Color',[[1 0 0] *((1-(epochi/model.epochs)))]);
     set(h,'MarkerSize',ms)
 end
-h=plot(x,squeeze(out(:,:,epoch)),'k.')
-set(h,'MarkerSize',ms)
+h3=plot(x,squeeze(out(:,:,epoch)),'k.')
+legend([h1 h2 h3],{'Original','Early model','Late model'},'Location','EastOutside')
+set(h3,'MarkerSize',ms)
 
 
 subplot(4,1,4)

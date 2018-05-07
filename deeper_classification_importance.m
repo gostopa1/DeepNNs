@@ -146,15 +146,15 @@ ylabel('Error')
 
 %%
 %impos=squeeze(mean(extract_OD(model,x),1));
-%impos=squeeze(mean(extract_LRP(model,x),1));
-impos=squeeze(mean(extract_LRPWX(model,x),1));
+impos=squeeze(mean(extract_LRP(model,x),1));
+%impos=squeeze(mean(extract_LRPWX(model,x),1));
 
+% You can also retrieve the importance of for each node in the network
+%[impos,imps_per_layer]=extract_LRP(model,x);
+%[impos,imps_per_layer]=extract_LRPWX(model,x);
 
 % If you wish to take the importance of the average sample (not good practice but saves memory)
-impos=squeeze(mean(extract_LRPWX(model,mean(x,1)),1));
-
-
-
+%impos=squeeze(mean(extract_LRPWX(model,mean(x,1)),1));
 
 
 for ii=1:noins

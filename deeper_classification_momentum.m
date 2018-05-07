@@ -1,4 +1,4 @@
-%% This script demonstrates the effect of different optimization algorithms thay may be used. 
+%% This script demonstrates the effect of different optimization algorithms that are available in the toolbox
 % Check out the model_train_fast_momentum function to see multiple
 % variations
 
@@ -57,7 +57,7 @@ for layeri=1:(length(layers)-1)
     model.layers(layeri).blr=lr;
     model.layers(layeri).Ws=[layers(layeri) layers(layeri+1)]
     
-    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))/sqrt(model.layersizes(layeri));
+    model.layers(layeri).W=(randn(layers(layeri),layers(layeri+1)))*sqrt(2/(model.layersizes(layeri)+model.layersizes(layeri+1)));
     
     %model.layers(layeri).B=(randn(layers(layeri+1),1)-0.5)/10;
     model.layers(layeri).B=(zeros(layers(layeri+1),1))/1;
@@ -84,10 +84,11 @@ for optimizer=optimizers
     model.optimizer=optimizer{1};
     display(['Training with ' model.optimizer])
     model1=model_train_fast_momentum(model);
-    plot(model1.error)
+    plot(model1.error,'LineWidth',2)
 end
 
 legend(optimizers)
 hold off
 xlabel('Epochs')
 ylabel('Error')
+title('Model error convergence comparison')
