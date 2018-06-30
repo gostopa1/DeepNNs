@@ -8,20 +8,19 @@
 %
 % and it is left here for demonstration purposes.
 clear
-
-addpath aux_scripts
+addpath(genpath('../DeepNNs'))
 make_example_regression_data
 model.type='regression';
 
 % Uncomment the next two lines if you wish to run a classification tutorial
-%make_example_classification_data
-%model.type='classification';
+make_example_classification_data
+model.type='classification';
 
 % Model initialization 
 example_model_initialization
 
 % Model training
-model=model_train(model);
+model=model_train_fast_momentum(model);
 
 % Model evaluation
 [ ~,out]=forwardpassing(model,x); % The first output argument corresponds to the updated model but it is not needed here
