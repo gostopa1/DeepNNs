@@ -32,6 +32,7 @@ clear model
 
 layers=[10];
 model.batchsize=500;
+model.type='classification';
 model.N=N;
 model.x=x;
 model.y=y;
@@ -83,7 +84,8 @@ for optimizer=optimizers
     display(optimizer{1});
     model.optimizer=optimizer{1};
     display(['Training with ' model.optimizer])
-    model1=model_train_fast_momentum(model);
+    model1=model_train(model);
+    
     plot(model1.error,'LineWidth',2)
 end
 
