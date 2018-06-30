@@ -22,10 +22,17 @@ To implement next:
 - Total variation regularization
 - Drop out
 - Nesterov momentum
+- Batch normalization
+- Dilation layers
 
 Attention: Combination of ReLU+Softmax+Cross-entropy can cause exploding gradient. The gradient explosion depends on how the parameters are initialized. Therefore, it might explode when running the script which leads to nonsense models (all or part of the parameters become NaNs). This issue is addressed in (1) and can be avoided to some extent by using L1 or L2 regularization.
 
 
 (1) https://arxiv.org/pdf/1211.5063.pdf
 
+
+This toolbox has been used in the following publications:
+Gotsopoulos, A., Saarimäki, H., Glerean, E., Jääskeläinen, I.P., Nummenmaa, L., Sams, M., Lampinen, J., 2018., Reproducibility of importance extraction methods in neural network based fMRI classification. Neuroimage
+https://www.sciencedirect.com/science/article/pii/S1053811918305834 
+https://linkinghub.elsevier.com/retrieve/pii/S1053811918305834
 
