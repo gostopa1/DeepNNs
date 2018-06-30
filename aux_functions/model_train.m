@@ -9,6 +9,8 @@ function [model,best_model]=model_train(model)
 
 for layeri=1:(length(model.layers))
     model.layers(layeri).nonzeroinds=find(model.layers(layeri).W~=0);
+    [model.layers(layeri).insinds model.layers(layeri).outsinds]=ind2sub(model.layers(layeri).Ws,model.layers(layeri).nonzeroinds);
+    
 end
 if ~isfield(model,'optimizer')
     display('No optimizer was selected')
@@ -18,17 +20,17 @@ end
 for layeri=1:(length(model.layers))
     if strcmp(model.optimizer,'SGD')
     elseif strcmp(model.optimizer,'SGD_m')
-        model.layers(layeri).mdedw=model.layers(layeri).W*0;
+        model.layers(layeri).mdedw=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
     elseif strcmp(model.optimizer,'RMSprop')
-        model.layers(layeri).mdedw=model.layers(layeri).W*0;
-        model.layers(layeri).mdedw_sq=model.layers(layeri).W*0; % This is necessary for the RMSprop
+        model.layers(layeri).mdedw=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
+        model.layers(layeri).mdedw_sq=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0; % This is necessary for the RMSprop
     elseif strcmp(model.optimizer,'RMSprop_m')
-        model.layers(layeri).mdedw=model.layers(layeri).W*0;
-        model.layers(layeri).mdedw_sq=model.layers(layeri).W*0; % This is necessary for the RMSprop
+        model.layers(layeri).mdedw=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
+        model.layers(layeri).mdedw_sq=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
     elseif strcmp(model.optimizer,'ADAM')
-        model.layers(layeri).mdedw=model.layers(layeri).W*0;
-        model.layers(layeri).m=model.layers(layeri).W*0;
-        model.layers(layeri).u=model.layers(layeri).W*0;
+        model.layers(layeri).mdedw=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
+        model.layers(layeri).m=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
+        model.layers(layeri).u=model.layers(layeri).W(model.layers(layeri).nonzeroinds)*0;
     else
         display('No proper optimizer was chosen.')
         display('Setting SGD as the optimizer')
@@ -107,9 +109,19 @@ for epoch=1:model.epochs
             %dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
             dedb=(dedout.*model.layers(layeri).doutdnet)'; % dE/db = dE/dout * dout/dnet
             dedw=permute(repmat(dedb,1,1,ins),[2 3 1]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
+            mdedw=permute(mean(dedw,1),[2 3 1]);
+            mdedw=mdedw(model.layers(layeri).nonzeroinds);
         else
             dedb=permute(mean(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[2 3 1]).*permute(repmat(model.layers(layeri+1).W,1,1,model.batchsize),[3 1 2]),3).*model.layers(layeri).doutdnet,[2 1]);
-            dedw=permute(repmat(dedb,1,1,ins),[2 3 1]).*repmat(model.layers(layeri).X,1,1,outs);
+            %dedw=permute(repmat(dedb,1,1,ins),[2 3 1]).*repmat(model.layers(layeri).X,1,1,outs);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=mdedw(model.layers(layeri).nonzeroinds);
+            
+            %mdedw=permute((repmat(mean(dedb,2),1,ins).*repmat(mean(model.layers(layeri).X,1),outs,1)),[2 1]);
+            
+            %mdedw=mdedw(model.layers(layeri).nonzeroinds);
+            
+            mdedw=mean(dedb(model.layers(layeri).outsinds,:).*(model.layers(layeri).X(:,model.layers(layeri).insinds)'),2);
         end
         %layeri
         %size(dedb)
@@ -121,19 +133,19 @@ for epoch=1:model.epochs
         
         if strcmp(model.optimizer,'SGD')
             %% SGD - No Momentum
-            mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw=mdedw;
             
         elseif strcmp(model.optimizer,'SGD_m')
             %% SGD - with momentum
             g=0.9;
-            mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw=(g)*mdedw+(1-g)*model.layers(layeri).mdedw;
             
         elseif strcmp(model.optimizer,'RMSprop')
             %% RMSprop - no momentum
             g=0.9;
-            mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw_sq=(g)*model.layers(layeri).mdedw_sq+(1-g)*mdedw.^2;
             model.layers(layeri).mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+10^(-8));
             
@@ -142,7 +154,7 @@ for epoch=1:model.epochs
             g1=0.9;
             g=0.9;
             epsil=10^(-8);
-            mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw_sq=(g1)*model.layers(layeri).mdedw_sq+(1-g1)*mdedw.^2;
             mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+epsil);
             model.layers(layeri).mdedw=(g)*model.layers(layeri).mdedw+(1-g)*mdedw;
@@ -152,7 +164,9 @@ for epoch=1:model.epochs
             b1=0.9;
             b2=0.99;
             epsil=10^(-8);
-            model.layers(layeri).mdedw=permute(mean(dedw,1),[2 3 1]);
+            %model.layers(layeri).mdedw=permute(mean(dedw,1),[2 3 1]);
+            %model.layers(layeri).mdedw=mdedw(model.layers(layeri).nonzeroinds);
+            model.layers(layeri).mdedw=mdedw;
             model.layers(layeri).m=b1*model.layers(layeri).m+(1-b1)*model.layers(layeri).mdedw;
             model.layers(layeri).u=b2*model.layers(layeri).u+(1-b2)*model.layers(layeri).mdedw.^2;
             model.layers(layeri).mdedw=(model.layers(layeri).m./(1-b1^epoch))./(sqrt((model.layers(layeri).u./(1-b2^epoch)))+epsil);
@@ -164,7 +178,7 @@ for epoch=1:model.epochs
         if length(model.layers(layeri).lr)>1
             model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr(model.layers(layeri).nonzeroinds).*model.layers(layeri).mdedw(model.layers(layeri).nonzeroinds);
         else
-            model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr*model.layers(layeri).mdedw(model.layers(layeri).nonzeroinds);
+            model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr*model.layers(layeri).mdedw;
         end
         model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr.*mean(dedb,2);
         
