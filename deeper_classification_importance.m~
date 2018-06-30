@@ -145,11 +145,9 @@ xlabel('Epoch')
 ylabel('Error')
 
 %%
-[model,out]=forwardpassing(model,x);
-
-%impos=extract_OD(model,x);
-impos=extract_LRP(model,x);
-%impos=extract_LRPWX(model,x);
+%impos=squeeze(mean(extract_OD(model,x),1));
+[impos,impos_per_layer]=extract_LRP(model,x);
+%[impos,impos_per_layer]=extract_LRPWX(model,x);
 
 % You can also retrieve the importance of for each node in the network
 %[impos,imps_per_layer]=extract_LRP(model,x);
