@@ -38,9 +38,9 @@ for outi=1:noouts
         Rr=repmat(permute(R,[1 3 2]),1,m,1);
         R=sum((Z./repmat(Zs,1,m,1)).*Rr,3);
 
-        imps_per_layer(layeri).R=R;
+        imps_per_layer(layeri).R(:,outi,:)=R';
     end
-    impos(:,:,outi)=R;
+    impos(:,outi,:)=R';
     
 end
 
