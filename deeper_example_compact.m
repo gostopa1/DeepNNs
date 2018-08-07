@@ -20,7 +20,7 @@ model.type='classification';
 example_model_initialization
 
 % Model training
-model=model_train_fast_momentum(model);
+model=model_train(model);
 
 % Model evaluation
 [ ~,out]=forwardpassing(model,x); % The first output argument corresponds to the updated model but it is not needed here
