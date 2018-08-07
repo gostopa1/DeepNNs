@@ -3,7 +3,7 @@ model.layers(1).X=x;
 layerno=length(model.layers);
 for layeri=1:layerno
     if strcmp(model.layers(layeri).activation,'softmaxact')
-        [model.layers(layeri).out, model.layers(layeri).doutdnet]=softmaxact(model.layers(layeri).X,model.layers(layeri).W,model.layers(layeri).B,model.target);
+        [model.layers(layeri).out, model.layers(layeri).doutdnet]=softmaxact(model.layers(layeri).X,model.layers(layeri).W,model.layers(layeri).B);
     elseif strcmp(model.layers(layeri).activation,'tanhact')
         [model.layers(layeri).out, model.layers(layeri).doutdnet]=tanhact(model.layers(layeri).X,model.layers(layeri).W,model.layers(layeri).B);
     elseif strcmp(model.layers(layeri).activation,'relu')
