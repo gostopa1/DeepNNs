@@ -3,7 +3,7 @@ if ~isfield(model,'type')
     model.type='regression';
 end
 
-layers=[10 10 10];
+layers=[5 5];
 model.batchsize=200; % Number of samples to use in each epoch
 model.N=N;
 model.x=x;
@@ -22,10 +22,10 @@ model.l1=0;
 model.layersizes=[layers];
 model.layersizesinitial=model.layersizes;
 model.target=y;
-model.epochs=1000; % How many training epochs to perform
+model.epochs=10000; % How many training epochs to perform
 model.update=100; % How often to show update of the network
-model.errofun='quadratic_cost';
-%model.errofun='cross_entropy_cost'; % This error function is widely used for classification problems where the distribution of the output values is not gaussian (typically it is binomial)
+%model.errofun='quadratic_cost';
+model.errofun='cross_entropy_cost'; % This error function is widely used for classification problems where the distribution of the output values is not gaussian (typically it is binomial)
 for layeri=1:(length(layers)-1)
     model.layers(layeri).lr=lr;
     model.layers(layeri).blr=lr;
@@ -46,5 +46,7 @@ else
     model.layers(layeri).activation='linact'; % This is used to avoid any limitation of the activation functions that might project values only to the positive side (ReLU [0,+inf]) or limit them between -1 and 1 (tanh) etc.
 end
 
-%model.optimizer='ADAM';
-model.optimizer='RMSprop_m';
+model.optimizer='ADAM';
+%model.optimizer='SGD';
+%model.optimizer='SGD_m';
+%model.optimizer='RMSprop_m';
