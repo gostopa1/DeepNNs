@@ -17,7 +17,7 @@ noouts=model.layersizes(end);
 for outi=1:noouts
     
     R=model.layers(length(model.layers)).out;
-    R=model.layers(length(model.layers)).out*0+1;
+    %R=model.layers(length(model.layers)).out*0+1;
     R(:,setxor(1:noouts,outi))=0;
     
     for layeri=length(model.layers):-1:1
