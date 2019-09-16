@@ -10,6 +10,8 @@ This is a toolbox for deep neural networks implemented in MATLAB. It supports cl
 - Selection of optimization algorithms with and without momentum (SGD, RMSprop, ADAM; check out in model_train_fast_momentum)
 - Feature Elimination (FE) which in combination with regularizers it removes non-important nodes. (see deeper_classification_regularization_feature_elimination.m tutorial)
 
+For a bunch of tutorials, check the tutorials folder.
+
 <img src="./images/example_image.png" align="left" height="600" width="350" ></a>
 
 Observations
