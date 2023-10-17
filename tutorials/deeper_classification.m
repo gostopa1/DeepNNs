@@ -1,9 +1,9 @@
 %% Creating dataset
 
 clear
-addpath('./aux_functions')
-addpath('./activation_functions')
-addpath('./loss_functions')
+addpath('../aux_functions')
+addpath('../activation_functions')
+addpath('../loss_functions')
 
 x = [1 1; 1 0; 0 1; 0 0];
 y(:,2) = [1; 0; 0; 1];
