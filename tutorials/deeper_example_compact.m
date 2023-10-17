@@ -8,7 +8,7 @@
 %
 % and it is left here for demonstration purposes.
 clear
-addpath(genpath('../DeepNNs'))
+addpath(genpath('../'))
 make_example_regression_data
 model.type='regression';
 
