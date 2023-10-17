@@ -1,9 +1,9 @@
 %% Creating dataset
 
 clear
-addpath('./aux_functions')
-addpath('./activation_functions')
-addpath('./loss_functions')
+addpath('../aux_functions')
+addpath('../activation_functions')
+addpath('../loss_functions')
 
 x = [1 1; 1 0; 0 1; 0 0];
 y(:,2) = [1; 0; 0; 1];
@@ -53,9 +53,7 @@ model.fe_update=250;
 model.l2=1;
 model.l1=0;
 
-
-model.errofun='quadratic_cost';
-model.errofun='cross_entropy_cost';
+model.errofun='cross_entropy_cost'; % 'quadratic_cost' or 'cross_entropy_cost'
 for layeri=1:(length(layers)-1)
     
     model.layers(layeri).lr=lr;
