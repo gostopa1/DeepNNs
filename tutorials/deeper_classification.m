@@ -32,9 +32,7 @@ noins=size(x,2);
 noouts=size(y,2);
 
 layers=[noins layers noouts];
-lr=0.05; activation='tanhact';
-%lr=0.01; activation='relu';
-%lr=0.1; activation='logsi';
+lr=0.001; activation='tanhact'; % could be relu or logsi for ReLU or logistic function respectively instead
 model.l2=0;
 model.l1=0;
 model.layersizes=[layers];
