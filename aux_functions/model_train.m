@@ -50,6 +50,11 @@ end
 
 best_model=model;
 
+model.figure.iters=[];
+model.figure.perf_train=[];
+model.figure.perf_test=[];
+model.figure.error_train=[];
+model.figure.error_test=[];
 for epoch=1:model.epochs
     batchinds=randperm(model.N,model.batchsize);
     model.target=model.y(batchinds,:);
@@ -65,11 +70,28 @@ for epoch=1:model.epochs
                 [~,out_test]=forwardpassing(model,model.x_test(:,model.layers(1).inds)); get_perf(out_test,model.y_test);
                 model.epoch=epochtemp;
                 y_test_str=[' - Test: ' sprintf('%2.2f', get_perf(out_test,model.y_test))];
-            else
-                y_test_str='';
+
+                [~,out_test]=forwardpassing(model,model.x_test);
+                [~,out_train]=forwardpassing(model,model.x);
+                error_train = calc_cross_entropy(model.y,out_train);
+                error_test = calc_cross_entropy(model.y_test,out_test);
+    
+                model.figure.iters=[model.figure.iters epoch];
+    
+                model.figure.error_train=[model.figure.error_train error_train];
+                model.figure.error_test=[model.figure.error_test error_test];
+    
+                model.figure.perf_train=[model.figure.perf_train get_perf(out_train,model.y)];
+                model.figure.perf_test=[model.figure.perf_test get_perf(out_test,model.y_test)];
+             else
+            y_test_str='';
             end
+
+            %
             [~,out_train]=forwardpassing(model,model.x);
             display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
+
+            
         end
     end
     % Should I perform feature elimination
@@ -94,6 +116,7 @@ for epoch=1:model.epochs
     if epoch>1
         if model.error(epoch)==min(model.error(:))
             best_model=model;
+            
         end
     end
     for layeri=(length(model.layers)):-1:model.fnzl
@@ -106,15 +129,25 @@ for epoch=1:model.epochs
             % dE/dw = dE/dout * dout/dnet * dnet/dw
             dnetdw=repmat(model.layers(layeri).X,1,1,outs); % dnet/dw
             
+            %dedb=(dedout(batchinds,:).*model.layers(layeri).doutdnet(batchinds,:))'; % dE/db = dE/dout * dout/dnet
             dedb=(dedout.*model.layers(layeri).doutdnet)'; % dE/db = dE/dout * dout/dnet
             dedw=permute(repmat(dedb,1,1,ins),[2 3 1]).*dnetdw; % dE/dw = dE/dout * dout/dnet * dnet/d
             mdedw=permute(mean(dedw,1),[2 3 1]);
             mdedw=mdedw(model.layers(layeri).nonzeroinds);
         else
             dedb=permute(mean(permute(repmat(model.layers(layeri+1).grad,1,1,outs),[2 3 1]).*permute(repmat(model.layers(layeri+1).W,1,1,model.batchsize),[3 1 2]),3).*model.layers(layeri).doutdnet,[2 1]);
+            %dedw=permute(repmat(dedb,1,1,ins),[2 3 1]).*repmat(model.layers(layeri).X,1,1,outs);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
+            %mdedw=mdedw(model.layers(layeri).nonzeroinds);
+            
+            %mdedw=permute((repmat(mean(dedb,2),1,ins).*repmat(mean(model.layers(layeri).X,1),outs,1)),[2 1]);
+            
+            %mdedw=mdedw(model.layers(layeri).nonzeroinds);
+            
             mdedw=mean(dedb(model.layers(layeri).outsinds,:).*(model.layers(layeri).X(:,model.layers(layeri).insinds)'),2);
         end
-
+        %layeri
+        %size(dedb)
         model.layers(layeri).grad=dedb;
         
         l1part=-model.layers(layeri).lr*(model.l1/model.batchsize).*sign(model.layers(layeri).W);
@@ -127,11 +160,13 @@ for epoch=1:model.epochs
         
         if strcmp(model.optimizer,'SGD')
             %% SGD - No Momentum
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw=mdedw;
             
         elseif strcmp(model.optimizer,'SGD_m')
             %% SGD - with momentum
             g=0.9;
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw=(g)*mdedw+(1-g)*model.layers(layeri).mdedw;
             
         elseif strcmp(model.optimizer,'RMSprop')
@@ -140,25 +175,33 @@ for epoch=1:model.epochs
             %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw_sq=(g)*model.layers(layeri).mdedw_sq+(1-g)*mdedw.^2;
             model.layers(layeri).mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+10^(-8));
+            
         elseif strcmp(model.optimizer,'RMSprop_m')
             %% RMSprop - with momentum
             g1=0.9;
             g=0.9;
             epsil=10^(-8);
+            %mdedw=permute(mean(dedw,1),[2 3 1]);
             model.layers(layeri).mdedw_sq=(g1)*model.layers(layeri).mdedw_sq+(1-g1)*mdedw.^2;
             mdedw=mdedw./(sqrt(model.layers(layeri).mdedw_sq)+epsil);
             model.layers(layeri).mdedw=(g)*model.layers(layeri).mdedw+(1-g)*mdedw;
             
             %% ADAM
         elseif strcmp(model.optimizer,'ADAM')
+            %if layeri==1
+            %   display('koloky8ia') ;
+            %end
             b1=0.9;
             b2=0.999;
-            epsil=10^(-9);
+            epsil=1e-9;
+            %model.layers(layeri).mdedw=permute(mean(dedw,1),[2 3 1]);
+            %model.layers(layeri).mdedw=mdedw(model.layers(layeri).nonzeroinds);
             
             model.layers(layeri).mdedw=mdedw;
             model.layers(layeri).m=b1*model.layers(layeri).m+(1-b1)*model.layers(layeri).mdedw;
             model.layers(layeri).u=b2*model.layers(layeri).u+(1-b2)*model.layers(layeri).mdedw.^2;
             model.layers(layeri).mdedw=(model.layers(layeri).m./(1-b1^epoch))./(sqrt((model.layers(layeri).u./(1-b2^epoch)))+epsil);
+            
         else
             display('Hey you have not chosen any optimizer!');
         end
@@ -170,8 +213,11 @@ for epoch=1:model.epochs
             model.layers(layeri).W(model.layers(layeri).nonzeroinds)=regularization_term(model.layers(layeri).nonzeroinds)-model.layers(layeri).lr*model.layers(layeri).mdedw;
         end
         model.layers(layeri).B=model.layers(layeri).B-model.layers(layeri).blr.*mean(dedb,2);
+        
+        
     end
-
+    
+    
 end
-
+best_model.figure=model.figure;
 end
