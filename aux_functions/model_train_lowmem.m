@@ -48,6 +48,12 @@ end
 
 best_model=model;
 
+model.figure.iters=[];
+model.figure.perf_train=[];
+model.figure.perf_test=[];
+model.figure.error_train=[];
+model.figure.error_test=[];
+
 for epoch=1:model.epochs
     batchinds=randperm(model.N,model.batchsize);
     model.target=model.y(batchinds,:);
