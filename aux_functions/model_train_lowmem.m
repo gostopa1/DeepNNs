@@ -68,6 +68,17 @@ for epoch=1:model.epochs
             end
             [~,out_train]=forwardpassing(model,model.x);
             display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
+
+            [~,out_train]=forwardpassing(model,model.x);
+            error_train = calc_cross_entropy(model.y,out_train);
+            error_test = calc_cross_entropy(model.y_test,out_test);
+            model.figure.iters=[model.figure.iters epoch];
+    
+            model.figure.error_train=[model.figure.error_train error_train];
+            model.figure.error_test=[model.figure.error_test error_test];
+    
+            model.figure.perf_train=[model.figure.perf_train get_perf(out_train,model.y)];
+            model.figure.perf_test=[model.figure.perf_test get_perf(out_test,model.y_test)];
         end
     end
     % Should I perform feature elimination
@@ -173,5 +184,5 @@ for epoch=1:model.epochs
     
     
 end
-
+best_model.figure=model.figure;
 end
