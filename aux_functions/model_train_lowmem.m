@@ -75,7 +75,7 @@ for epoch=1:model.epochs
             [~,out_train]=forwardpassing(model,model.x);
             display(['Epoch: ' num2str(epoch) ' - Training: ' sprintf('%2.2f',get_perf(out_train,model.y)) y_test_str]);
 
-            [~,out_train]=forwardpassing(model,model.x);
+            [~,out_test]=forwardpassing(model,model.x_test);
             error_train = calc_cross_entropy(model.y,out_train);
             error_test = calc_cross_entropy(model.y_test,out_test);
             model.figure.iters=[model.figure.iters epoch];
