@@ -188,20 +188,13 @@ for epoch=1:model.epochs
             
             %% ADAM
         elseif strcmp(model.optimizer,'ADAM')
-            %if layeri==1
-            %   display('koloky8ia') ;
-            %end
             b1=0.9;
             b2=0.999;
             epsil=1e-9;
-            %model.layers(layeri).mdedw=permute(mean(dedw,1),[2 3 1]);
-            %model.layers(layeri).mdedw=mdedw(model.layers(layeri).nonzeroinds);
-            
             model.layers(layeri).mdedw=mdedw;
             model.layers(layeri).m=b1*model.layers(layeri).m+(1-b1)*model.layers(layeri).mdedw;
             model.layers(layeri).u=b2*model.layers(layeri).u+(1-b2)*model.layers(layeri).mdedw.^2;
             model.layers(layeri).mdedw=(model.layers(layeri).m./(1-b1^epoch))./(sqrt((model.layers(layeri).u./(1-b2^epoch)))+epsil);
-            
         else
             display('Hey you have not chosen any optimizer!');
         end
